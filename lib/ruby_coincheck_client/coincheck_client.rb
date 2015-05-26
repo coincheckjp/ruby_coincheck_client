@@ -10,6 +10,24 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
+  def read_accounts(key, secret)
+    uri = URI.parse BASE_URL + "api/accounts"
+    headers = get_signature(uri, key, secret)
+    request_for_get(uri, headers)
+  end
+
+  def read_transactions(key, secret)
+    uri = URI.parse BASE_URL + "api/exchange/orders/transactions"
+    headers = get_signature(uri, key, secret)
+    request_for_get(uri, headers)
+  end
+
+  def read_orders(key, secret)
+    uri = URI.parse BASE_URL + "api/exchange/orders/opens"
+    headers = get_signature(uri, key, secret)
+    request_for_get(uri, headers)
+  end
+
   private
     def request_for_get(uri, headers)
       https = Net::HTTP.new(uri.host, uri.port)
