@@ -22,7 +22,19 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+#!/usr/bin/env ruby -Ilib
+require 'ruby_coincheck_client'
+
+cc = CoincheckClient.new("YOUR API KEY", "YOUR SECRET KEY")
+response = cc.read_balance()
+response = cc.read_accounts()
+response = cc.read_transactions
+response = cc.read_orders
+response = cc.create_orders("40001", "0.01", "sell")
+response = cc.delete_orders("2503344")
+response = cc.create_send_money("136aHpRdd7eezbEusAKS2GyWx9eXZsEuMz", "0.0005")
+```
 
 ## Development
 
