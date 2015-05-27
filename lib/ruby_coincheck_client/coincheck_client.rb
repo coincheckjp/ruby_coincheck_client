@@ -66,6 +66,16 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
+  def read_ticker
+    uri = URI.parse BASE_URL + "api/ticker"
+    request_for_get(uri)
+  end
+
+  def read_order_books
+    uri = URI.parse BASE_URL + "api/order_books"
+    request_for_get(uri)
+  end
+
   private
     def http_request(uri, request)
       https = Net::HTTP.new(uri.host, uri.port)
@@ -77,7 +87,7 @@ class CoincheckClient
       end
     end
 
-    def request_for_get(uri, headers)
+    def request_for_get(uri, headers = {})
       request = Net::HTTP::Get.new(uri.request_uri, initheader = headers)
       http_request(uri, request)
     end

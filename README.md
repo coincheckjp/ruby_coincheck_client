@@ -32,6 +32,8 @@ response = cc.read_orders
 response = cc.create_orders("40001", "0.01", "sell")
 response = cc.delete_orders("2503344")
 response = cc.create_send_money("136aHpRdd7eezbEusAKS2GyWx9eXZsEuMz", "0.0005")
+response = cc.read_ticker
+response = cc.read_order_books
 ```
 
 ## Development
