@@ -4,33 +4,40 @@ require 'openssl'
 require 'json'
 
 class CoincheckClient
-  BASE_URL = "https://coincheck.jp/"
+  @@base_url = "https://coincheck.jp/"
+  @@ssl = true
 
-  def initialize(key, secret)
+  def initialize(key, secret, params = {})
     @key = key
     @secret = secret
+    if !params[:base_url].nil?
+      @@base_url = params[:base_url]
+    end
+    if !params[:ssl].nil?
+      @@ssl = params[:ssl]
+    end
   end
 
   def read_balance
-    uri = URI.parse BASE_URL + "api/accounts/balance"
+    uri = URI.parse @@base_url + "api/accounts/balance"
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
 
   def read_accounts
-    uri = URI.parse BASE_URL + "api/accounts"
+    uri = URI.parse @@base_url + "api/accounts"
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
 
   def read_transactions
-    uri = URI.parse BASE_URL + "api/exchange/orders/transactions"
+    uri = URI.parse @@base_url + "api/exchange/orders/transactions"
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
 
   def read_orders
-    uri = URI.parse BASE_URL + "api/exchange/orders/opens"
+    uri = URI.parse @@base_url + "api/exchange/orders/opens"
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
@@ -42,7 +49,7 @@ class CoincheckClient
       order_type: order_type,
       pair: pair
     }
-    uri = URI.parse BASE_URL + "api/exchange/orders"
+    uri = URI.parse @@base_url + "api/exchange/orders"
     headers = get_signature(uri, @key, @secret, body.to_json)
     request_for_post(uri, headers, body)
   end
@@ -51,7 +58,7 @@ class CoincheckClient
     body = {
       id: id,
     }
-    uri = URI.parse BASE_URL + "api/exchange/orders/#{id}"
+    uri = URI.parse @@base_url + "api/exchange/orders/#{id}"
     headers = get_signature(uri, @key, @secret)
     request_for_delete(uri, headers)
   end
@@ -61,26 +68,28 @@ class CoincheckClient
       address: address,
       amount: amount,
     }
-    uri = URI.parse BASE_URL + "api/send_money"
+    uri = URI.parse @@base_url + "api/send_money"
     headers = get_signature(uri, @key, @secret, body.to_json)
     request_for_post(uri, headers, body)
   end
 
   def read_ticker
-    uri = URI.parse BASE_URL + "api/ticker"
+    uri = URI.parse @@base_url + "api/ticker"
     request_for_get(uri)
   end
 
   def read_order_books
-    uri = URI.parse BASE_URL + "api/order_books"
+    uri = URI.parse @@base_url + "api/order_books"
     request_for_get(uri)
   end
 
   private
     def http_request(uri, request)
       https = Net::HTTP.new(uri.host, uri.port)
-      https.use_ssl = true
-      https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      if @@ssl
+        https.use_ssl = true
+        https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
 
       response = https.start do |h|
         h.request(request)
