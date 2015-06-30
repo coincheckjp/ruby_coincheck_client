@@ -6,11 +6,11 @@ require 'ruby_coincheck_client/version'
 Gem::Specification.new do |spec|
   spec.name          = "ruby_coincheck_client"
   spec.version       = RubyCoincheckClient::VERSION
-  spec.authors       = ["yuma300"]
-  spec.email         = ["ywakimoto2s@gmail.com"]
+  spec.authors       = ["coincheck"]
+  spec.email         = ["info@coincheck.jp"]
 
   spec.summary       = %q{This is ruby client of coincheck api}
-  spec.homepage      = "https://github.com/yuma300/ruby-ripple-rest"
+  spec.homepage      = "https://github.com/coincheckjp/ruby_coincheck_client"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
   # delete this section to allow pushing this gem to any host.
