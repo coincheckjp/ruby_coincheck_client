@@ -25,15 +25,38 @@ Or install it yourself as:
 require 'ruby_coincheck_client'
 
 cc = CoincheckClient.new("YOUR API KEY", "YOUR SECRET KEY")
-response = cc.read_balance()
-response = cc.read_accounts()
+response = cc.read_balance
+response = cc.read_leverage_balance
+response = cc.read_accounts
 response = cc.read_transactions
+response = cc.read_positions
 response = cc.read_orders
-response = cc.create_orders("40001", "0.01", "sell")
-response = cc.delete_orders("2503344")
-response = cc.create_send_money("136aHpRdd7eezbEusAKS2GyWx9eXZsEuMz", "0.0005")
+response = cc.create_orders(rate: "40001", amount: "0.01", order_type: "buy")
+response = cc.create_orders(rate: "50001", amount: "0.001", order_type: "sell")
+response = cc.create_orders(market_buy_amount: 100, order_type: "market_buy")
+response = cc.create_orders(amount: "0.001", order_type: "market_sell")
+response = cc.create_orders(rate: "40000", amount: "0.001", order_type: "leverage_buy")
+response = cc.create_orders(rate: "60000", amount: "0.001", order_type: "leverage_sell")
+response = cc.create_orders(rate: "60000", amount: "0.001", position_id: "2222", order_type: "close_long")
+response = cc.create_orders(rate: "40000", amount: "0.001", position_id: "2222", order_type: "close_short")
+response = cc.delete_orders(id: "2503344")
+response = cc.create_send_money(address: "136aHpRdd7eezbEusAKS2GyWx9eXZsEuMz", amount: "0.0005")
+response = cc.read_send_money
+response = cc.read_deposit_money
+response = cc.create_deposit_money_fast(id: "2222")
 response = cc.read_ticker
+response = cc.read_trades
 response = cc.read_order_books
+response = cc.read_bank_accounts
+response = cc.delete_bank_accounts(id: "2222")
+response = cc.read_withdraws
+response = cc.delete_withdraws
+response = cc.create_borrows(amount: "0.001", currency: "BTC")
+response = cc.read_borrows
+response = cc.delete_borrows(id: "58606")
+response = cc.transfer_to_leverage(amount: "1000")
+response = cc.transfer_from_leverage(amount: "1000")
+JSON.parse(response.body)
 ```
 
 ## Development
