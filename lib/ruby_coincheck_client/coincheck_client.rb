@@ -2,8 +2,11 @@ require 'net/http'
 require 'uri'
 require 'openssl'
 require 'json'
+require './currency'
 
 class CoincheckClient
+  include Currency
+
   @@base_url = "https://coincheck.jp/"
   @@ssl = true
 
@@ -54,7 +57,7 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: "btc_jpy")
+  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: Pair::BTC_JPY)
     body = {
       rate: rate,
       amount: amount,
@@ -111,6 +114,11 @@ class CoincheckClient
 
   def read_trades
     uri = URI.parse @@base_url + "api/trades"
+    request_for_get(uri)
+  end
+
+  def read_rate(pair: Pair::BTC_JPY)
+    uri = URI.parse @@base_url + "/api/rate/#{pair}"
     request_for_get(uri)
   end
 
@@ -179,7 +187,7 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
-  def transfer_to_leverage(amount:, currency: "JPY")
+  def transfer_to_leverage(amount:, currency: JPY)
     body = {
       amount: amount,
       currency: currency
@@ -189,7 +197,7 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
-  def transfer_from_leverage(amount:, currency: "JPY")
+  def transfer_from_leverage(amount:, currency: JPY)
     body = {
       amount: amount,
       currency: currency
