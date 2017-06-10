@@ -54,14 +54,15 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: "btc_jpy")
+  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: "btc_jpy", stop_loss_rate: nil)
     body = {
       rate: rate,
       amount: amount,
       market_buy_amount: market_buy_amount,
       order_type: order_type,
       position_id: position_id,
-      pair: pair
+      pair: pair,
+      stop_loss_rate: stop_loss_rate
     }
     uri = URI.parse @@base_url + "api/exchange/orders"
     headers = get_signature(uri, @key, @secret, body.to_json)
