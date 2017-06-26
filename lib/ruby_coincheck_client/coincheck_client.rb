@@ -2,7 +2,7 @@ require 'net/http'
 require 'uri'
 require 'openssl'
 require 'json'
-require './currency'
+require_relative './currency'
 
 class CoincheckClient
   include Currency
