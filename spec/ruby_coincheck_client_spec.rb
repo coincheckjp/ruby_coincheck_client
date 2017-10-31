@@ -9,12 +9,10 @@ describe RubyCoincheckClient do
   end
 
   describe "#read_ticker" do
-
     let(:cc) { CoincheckClient.new("","") }
     let(:res) { cc.read_ticker }
     let(:body) { JSON.parse(res.body) }
     let(:response_keys) { ["last","bid","ask","high","low","volume","timestamp"].sort }
-
 
     it 'return status code 200' do
       expect(res.code).to eq("200")
