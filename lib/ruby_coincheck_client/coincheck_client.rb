@@ -10,7 +10,7 @@ class CoincheckClient
   @@base_url = "https://coincheck.jp/"
   @@ssl = true
 
-  def initialize(key, secret, params = {})
+  def initialize(key = nil, secret = nil, params = {})
     @key = key
     @secret = secret
     if !params[:base_url].nil?
