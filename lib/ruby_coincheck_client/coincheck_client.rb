@@ -44,6 +44,12 @@ class CoincheckClient
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
+  
+  def read_transactions_pagination(body = {})
+    uri = URI.parse @@base_url + "api/exchange/orders/transactions_pagination"
+    headers = get_signature(uri, @key, @secret, body.to_json)
+    request_for_get(uri, headers, body)
+  end
 
   def read_positions(body = {})
     uri = URI.parse @@base_url + "api/exchange/leverage/positions"
