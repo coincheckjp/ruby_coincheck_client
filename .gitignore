@@ -8,3 +8,4 @@
 /spec/reports/
 /tmp/
 test_example.rb
+.env

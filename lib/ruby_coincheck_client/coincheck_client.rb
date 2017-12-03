@@ -7,7 +7,7 @@ require_relative './currency'
 class CoincheckClient
   include Currency
 
-  @@base_url = "https://coincheck.jp/"
+  @@base_url = "https://coincheck.com/"
   @@ssl = true
 
   def initialize(key = nil, secret = nil, params = {})
@@ -45,10 +45,10 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_positions(body = {})
+  def read_positions(params = {})
     uri = URI.parse @@base_url + "api/exchange/leverage/positions"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_get(uri, headers, body)
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers, params)
   end
 
   def read_orders
@@ -80,8 +80,7 @@ class CoincheckClient
   def read_orders_rate(order_type:, pair: Pair::BTC_JPY, price: nil, amount: nil)
     uri = URI.parse @@base_url + "api/exchange/orders/rate"
     params = { order_type: order_type, pair: pair, price: price, amount: amount }
-    uri.query = URI.encode_www_form(params)
-    request_for_get(uri)
+    request_for_get(uri, {}, params)
   end
 
   def create_send_money(address:, amount:)
@@ -95,17 +94,17 @@ class CoincheckClient
   end
 
   def read_send_money(currency: "BTC")
-    body = { currency: currency }
+    params = { currency: currency }
     uri = URI.parse @@base_url + "api/send_money"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_get(uri, headers, body)
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers, params)
   end
 
   def read_deposit_money(currency: "BTC")
-    body = { currency: currency }
+    params = { currency: currency }
     uri = URI.parse @@base_url + "api/deposit_money"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_get(uri, headers, body)
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers, params)
   end
 
   def create_deposit_money_fast(id: )
@@ -227,21 +226,28 @@ class CoincheckClient
       end
     end
 
-    def request_for_get(uri, headers = {}, body = nil)
-      request = Net::HTTP::Get.new(uri.request_uri, initheader = headers)
-      request.body = body.to_json if body
+    def request_for_get(uri, headers = {}, params = nil)
+      uri.query = URI.encode_www_form(params) if params
+      request = Net::HTTP::Get.new(uri.request_uri, initheader = custom_header(headers))
       http_request(uri, request)
     end
 
     def request_for_delete(uri, headers)
-      request = Net::HTTP::Delete.new(uri.request_uri, initheader = headers)
+      request = Net::HTTP::Delete.new(uri.request_uri, initheader = custom_header(headers))
       http_request(uri, request)
     end
 
     def request_for_post(uri, headers, body)
-      request = Net::HTTP::Post.new(uri.request_uri, initheader = headers)
+      request = Net::HTTP::Post.new(uri.request_uri, initheader = custom_header(headers))
       request.body = body.to_json
       http_request(uri, request)
+    end
+
+    def custom_header(headers = {})
+      headers.merge!({
+        "Content-Type" => "application/json",
+        "User-Agent" => "RubyCoincheckClient v#{RubyCoincheckClient::VERSION}"
+      })
     end
 
     def get_signature(uri, key, secret, body = "")
@@ -249,7 +255,6 @@ class CoincheckClient
       message = nonce + uri.to_s + body
       signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha256"), secret, message)
       headers = {
-        "Content-Type" => "application/json",
         "ACCESS-KEY" => key,
         "ACCESS-NONCE" => nonce,
         "ACCESS-SIGNATURE" => signature
