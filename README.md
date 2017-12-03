@@ -31,6 +31,7 @@ response = cc.read_accounts
 response = cc.read_transactions
 response = cc.read_positions
 response = cc.read_orders
+response = cc.read_orders_rate(order_type: 'buy', amount: "0.01")
 response = cc.create_orders(rate: "40001", amount: "0.01", order_type: "buy")
 response = cc.create_orders(rate: "50001", amount: "0.001", order_type: "sell")
 response = cc.create_orders(market_buy_amount: 100, order_type: "market_buy")
@@ -68,7 +69,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-1. Fork it ( https://github.com/yuma300/ruby_coincheck_client/fork )
+1. Fork it ( https://github.com/coincheckjp/ruby_coincheck_client/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

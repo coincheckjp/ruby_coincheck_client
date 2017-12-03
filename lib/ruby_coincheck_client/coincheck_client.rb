@@ -77,6 +77,13 @@ class CoincheckClient
     request_for_delete(uri, headers)
   end
 
+  def read_orders_rate(order_type:, pair: Pair::BTC_JPY, price: nil, amount: nil)
+    uri = URI.parse @@base_url + "api/exchange/orders/rate"
+    params = { order_type: order_type, pair: pair, price: price, amount: amount }
+    uri.query = URI.encode_www_form(params)
+    request_for_get(uri)
+  end
+
   def create_send_money(address:, amount:)
     body = {
       address: address,
