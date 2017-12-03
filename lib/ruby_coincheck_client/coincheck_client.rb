@@ -80,8 +80,7 @@ class CoincheckClient
   def read_orders_rate(order_type:, pair: Pair::BTC_JPY, price: nil, amount: nil)
     uri = URI.parse @@base_url + "api/exchange/orders/rate"
     params = { order_type: order_type, pair: pair, price: price, amount: amount }
-    uri.query = URI.encode_www_form(params)
-    request_for_get(uri)
+    request_for_get(uri, {}, params)
   end
 
   def create_send_money(address:, amount:)
@@ -228,20 +227,27 @@ class CoincheckClient
     end
 
     def request_for_get(uri, headers = {}, params = nil)
-      request = Net::HTTP::Get.new(uri.request_uri, initheader = headers)
       uri.query = URI.encode_www_form(params) if params
+      request = Net::HTTP::Get.new(uri.request_uri, initheader = custom_header(headers))
       http_request(uri, request)
     end
 
     def request_for_delete(uri, headers)
-      request = Net::HTTP::Delete.new(uri.request_uri, initheader = headers)
+      request = Net::HTTP::Delete.new(uri.request_uri, initheader = custom_header(headers))
       http_request(uri, request)
     end
 
     def request_for_post(uri, headers, body)
-      request = Net::HTTP::Post.new(uri.request_uri, initheader = headers)
+      request = Net::HTTP::Post.new(uri.request_uri, initheader = custom_header(headers))
       request.body = body.to_json
       http_request(uri, request)
+    end
+
+    def custom_header(headers = {})
+      headers.merge!({
+        "Content-Type" => "application/json",
+        "User-Agent" => "RubyCoincheckClient v#{RubyCoincheckClient::VERSION}"
+      })
     end
 
     def get_signature(uri, key, secret, body = "")
@@ -249,11 +255,9 @@ class CoincheckClient
       message = nonce + uri.to_s + body
       signature = OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new("sha256"), secret, message)
       headers = {
-        "Content-Type" => "application/json",
         "ACCESS-KEY" => key,
         "ACCESS-NONCE" => nonce,
-        "ACCESS-SIGNATURE" => signature,
-        "USER-AGENT" => "RubyCoincheckClient v#{RubyCoincheckClient::VERSION}"
+        "ACCESS-SIGNATURE" => signature
       }
     end
 end
