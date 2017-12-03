@@ -7,10 +7,10 @@ require_relative './currency'
 class CoincheckClient
   include Currency
 
-  @@base_url = "https://coincheck.jp/"
+  @@base_url = "https://coincheck.com/"
   @@ssl = true
 
-  def initialize(key, secret, params = {})
+  def initialize(key = nil, secret = nil, params = {})
     @key = key
     @secret = secret
     if !params[:base_url].nil?
@@ -45,10 +45,10 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_positions(body = {})
+  def read_positions(params = {})
     uri = URI.parse @@base_url + "api/exchange/leverage/positions"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_get(uri, headers, body)
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers, params)
   end
 
   def read_orders
@@ -88,17 +88,17 @@ class CoincheckClient
   end
 
   def read_send_money(currency: "BTC")
-    body = { currency: currency }
+    params = { currency: currency }
     uri = URI.parse @@base_url + "api/send_money"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_get(uri, headers, body)
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers, params)
   end
 
   def read_deposit_money(currency: "BTC")
-    body = { currency: currency }
+    params = { currency: currency }
     uri = URI.parse @@base_url + "api/deposit_money"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_get(uri, headers, body)
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers, params)
   end
 
   def create_deposit_money_fast(id: )
@@ -220,9 +220,9 @@ class CoincheckClient
       end
     end
 
-    def request_for_get(uri, headers = {}, body = nil)
+    def request_for_get(uri, headers = {}, params = nil)
       request = Net::HTTP::Get.new(uri.request_uri, initheader = headers)
-      request.body = body.to_json if body
+      uri.query = URI.encode_www_form(params) if params
       http_request(uri, request)
     end
 
@@ -245,7 +245,8 @@ class CoincheckClient
         "Content-Type" => "application/json",
         "ACCESS-KEY" => key,
         "ACCESS-NONCE" => nonce,
-        "ACCESS-SIGNATURE" => signature
+        "ACCESS-SIGNATURE" => signature,
+        "USER-AGENT" => "RubyCoincheckClient v#{RubyCoincheckClient::VERSION}"
       }
     end
 end
