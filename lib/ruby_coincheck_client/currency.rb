@@ -10,6 +10,10 @@ module Currency
   REP = "REP"
   XRP = "XRP"
   ZEC = "ZEC"
+  XEM = "XEM"
+  LTC = "LTC"
+  DASH = "DASH"
+  BCH = "BCH"
 
   module Pair
     BTC_JPY = "btc_jpy"
@@ -22,6 +26,10 @@ module Currency
     REP_JPY = "rep_jpy"
     XRP_JPY = "xrp_jpy"
     ZEC_JPY = "zec_jpy"
+    XEM_JPY = "xem_jpy"
+    LTC_JPY = "ltc_jpy"
+    DASH_JPY = "dash_jpy"
+    BCH_JPY = "bch_jpy"
     ETH_BTC = "eth_btc"
     ETC_BTC = "etc_btc"
     LSK_BTC = "lsk_btc"
@@ -30,5 +38,9 @@ module Currency
     REP_BTC = "rep_btc"
     XRP_BTC = "xrp_btc"
     ZEC_BTC = "zec_btc"
+    XEM_BTC = "xem_btc"
+    LTC_BTC = "ltc_btc"
+    DASH_BTC = "dash_btc"
+    BCH_BTC = "bch_btc"
   end
 end
