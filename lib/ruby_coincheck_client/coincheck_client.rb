@@ -123,8 +123,9 @@ class CoincheckClient
     request_for_get(uri)
   end
 
-  def read_trades
+  def read_trades(params = {})
     uri = URI.parse @@base_url + "api/trades"
+    uri.query = URI.encode_www_form(params) unless params.empty?
     request_for_get(uri)
   end
 
@@ -133,8 +134,9 @@ class CoincheckClient
     request_for_get(uri)
   end
 
-  def read_order_books
+  def read_order_books(params = {})
     uri = URI.parse @@base_url + "api/order_books"
+    uri.query = URI.encode_www_form(params) unless params.empty?
     request_for_get(uri)
   end
 
