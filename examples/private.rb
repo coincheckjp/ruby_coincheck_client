@@ -7,5 +7,6 @@ puts cc.read_balance.body
 puts cc.read_leverage_balance.body
 puts cc.read_accounts.body
 puts cc.read_transactions.body
+puts cc.read_positions(status: 'open').body
 puts cc.read_positions.body
 puts cc.read_orders.body
