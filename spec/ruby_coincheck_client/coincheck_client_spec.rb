@@ -34,8 +34,6 @@ describe CoincheckClient do
     it 'return status code 200' do
       stub_request(
         :get, "https://coincheck.com/api/exchange/leverage/positions?status=open"
-      ).with(
-        :headers => { 'Content-Length' => 7 }
       ).to_return(
         body: {
           "success": true,
