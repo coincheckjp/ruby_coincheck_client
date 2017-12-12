@@ -1,3 +1,5 @@
+[![CircleCI](https://circleci.com/gh/coincheckjp/ruby_coincheck_client.svg?style=svg)](https://circleci.com/gh/coincheckjp/ruby_coincheck_client)
+
 # RubyCoincheckClient
 
 This is ruby client implementation for Coincheck API.
