@@ -45,10 +45,12 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_positions(params = {})
+  def read_positions(status: nil)
+    params = { status: status }
     uri = URI.parse @@base_url + "api/exchange/leverage/positions"
+    uri.query = URI.encode_www_form(params)
     headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers, params)
+    request_for_get(uri, headers)
   end
 
   def read_orders
@@ -78,9 +80,10 @@ class CoincheckClient
   end
 
   def read_orders_rate(order_type:, pair: Pair::BTC_JPY, price: nil, amount: nil)
-    uri = URI.parse @@base_url + "api/exchange/orders/rate"
     params = { order_type: order_type, pair: pair, price: price, amount: amount }
-    request_for_get(uri, {}, params)
+    uri = URI.parse @@base_url + "api/exchange/orders/rate"
+    uri.query = URI.encode_www_form(params)
+    request_for_get(uri)
   end
 
   def create_send_money(address:, amount:)
@@ -96,15 +99,17 @@ class CoincheckClient
   def read_send_money(currency: "BTC")
     params = { currency: currency }
     uri = URI.parse @@base_url + "api/send_money"
+    uri.query = URI.encode_www_form(params)
     headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers, params)
+    request_for_get(uri, headers)
   end
 
   def read_deposit_money(currency: "BTC")
     params = { currency: currency }
     uri = URI.parse @@base_url + "api/deposit_money"
+    uri.query = URI.encode_www_form(params)
     headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers, params)
+    request_for_get(uri, headers)
   end
 
   def create_deposit_money_fast(id: )
@@ -124,7 +129,7 @@ class CoincheckClient
   end
 
   def read_rate(pair: Pair::BTC_JPY)
-    uri = URI.parse @@base_url + "/api/rate/#{pair}"
+    uri = URI.parse @@base_url + "api/rate/#{pair}"
     request_for_get(uri)
   end
 
@@ -226,8 +231,7 @@ class CoincheckClient
       end
     end
 
-    def request_for_get(uri, headers = {}, params = nil)
-      uri.query = URI.encode_www_form(params) if params
+    def request_for_get(uri, headers = {})
       request = Net::HTTP::Get.new(uri.request_uri, initheader = custom_header(headers))
       http_request(uri, request)
     end
