@@ -129,7 +129,7 @@ class CoincheckClient
   end
 
   def read_rate(pair: Pair::BTC_JPY)
-    uri = URI.parse @@base_url + "/api/rate/#{pair}"
+    uri = URI.parse @@base_url + "api/rate/#{pair}"
     request_for_get(uri)
   end
 
