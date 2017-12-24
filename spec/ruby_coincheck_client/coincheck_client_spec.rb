@@ -8,7 +8,7 @@ describe CoincheckClient do
 
     it 'return status code 200' do
       stub_request(
-        :get, "https://coincheck.com/api/trades/#{CoincheckClient::Pair::BTC_JPY}"
+        :get, "https://coincheck.com/api/trades?pair=#{CoincheckClient::Pair::BTC_JPY}"
       ).to_return(
         body: [
           {
