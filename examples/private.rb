@@ -10,4 +10,4 @@ puts cc.read_transactions.body
 puts cc.read_positions(status: 'open').body
 puts cc.read_positions.body
 puts cc.read_trades().body
-puts cc.read_page_transactions().body
+puts cc.read_page_transactions.body
