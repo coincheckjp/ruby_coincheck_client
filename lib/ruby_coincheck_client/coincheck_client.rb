@@ -45,6 +45,12 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
+  def read_page_transactions
+    uri = URI.parse @@base_url + "api/exchange/orders/transactions_pagination"
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers)
+  end
+
   def read_positions(status: nil)
     params = { status: status }
     uri = URI.parse @@base_url + "api/exchange/leverage/positions"
@@ -123,8 +129,10 @@ class CoincheckClient
     request_for_get(uri)
   end
 
-  def read_trades
+  def read_trades(pair: Pair::BTC_JPY )
+    params = {pair: Pair::BTC_JPY }
     uri = URI.parse @@base_url + "api/trades"
+    uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
