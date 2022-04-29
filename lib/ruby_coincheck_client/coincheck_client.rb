@@ -27,12 +27,6 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_leverage_balance
-    uri = URI.parse @@base_url + "api/accounts/leverage_balance"
-    headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers)
-  end
-
   def read_accounts
     uri = URI.parse @@base_url + "api/accounts"
     headers = get_signature(uri, @key, @secret)
@@ -47,14 +41,6 @@ class CoincheckClient
 
   def read_page_transactions
     uri = URI.parse @@base_url + "api/exchange/orders/transactions_pagination"
-    headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers)
-  end
-
-  def read_positions(status: nil)
-    params = { status: status }
-    uri = URI.parse @@base_url + "api/exchange/leverage/positions"
-    uri.query = URI.encode_www_form(params)
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
@@ -118,12 +104,6 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def create_deposit_money_fast(id: )
-    uri = URI.parse @@base_url + "api/deposit_money/#{id}/fast"
-    headers = get_signature(uri, @key, @secret)
-    request_for_delete(uri, headers)
-  end
-
   def read_ticker
     uri = URI.parse @@base_url + "api/ticker"
     request_for_get(uri)
@@ -181,49 +161,6 @@ class CoincheckClient
     uri = URI.parse @@base_url + "api/withdraws/#{id}"
     headers = get_signature(uri, @key, @secret)
     request_for_delete(uri, headers)
-  end
-
-  def create_borrows(amount:, currency:)
-    body = {
-      amount: amount,
-      currency: currency
-    }
-    uri = URI.parse @@base_url + "api/lending/borrows"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_post(uri, headers, body)
-  end
-
-  def read_borrows
-    uri = URI.parse @@base_url + "api/lending/borrows/matches"
-    headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers)
-  end
-
-  def delete_borrows(id:)
-    body = { id: id}
-    uri = URI.parse @@base_url + "api/lending/borrows/#{id}/repay"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_post(uri, headers, body)
-  end
-
-  def transfer_to_leverage(amount:, currency: JPY)
-    body = {
-      amount: amount,
-      currency: currency
-    }
-    uri = URI.parse @@base_url + "api/exchange/transfers/to_leverage"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_post(uri, headers, body)
-  end
-
-  def transfer_from_leverage(amount:, currency: JPY)
-    body = {
-      amount: amount,
-      currency: currency
-    }
-    uri = URI.parse @@base_url + "api/exchange/transfers/from_leverage"
-    headers = get_signature(uri, @key, @secret, body.to_json)
-    request_for_post(uri, headers, body)
   end
 
   private
