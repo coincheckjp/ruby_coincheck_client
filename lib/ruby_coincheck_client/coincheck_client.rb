@@ -2,10 +2,8 @@ require 'net/http'
 require 'uri'
 require 'openssl'
 require 'json'
-require_relative './currency'
 
 class CoincheckClient
-  include Currency
 
   @@base_url = "https://coincheck.com/"
   @@ssl = true
@@ -51,7 +49,7 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: Pair::BTC_JPY)
+  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: "btc_jpy")
     body = {
       rate: rate,
       amount: amount,
@@ -71,7 +69,7 @@ class CoincheckClient
     request_for_delete(uri, headers)
   end
 
-  def read_orders_rate(order_type:, pair: Pair::BTC_JPY, price: nil, amount: nil)
+  def read_orders_rate(order_type:, pair: "btc_jpy", price: nil, amount: nil)
     params = { order_type: order_type, pair: pair, price: price, amount: amount }
     uri = URI.parse @@base_url + "api/exchange/orders/rate"
     uri.query = URI.encode_www_form(params)
@@ -109,14 +107,14 @@ class CoincheckClient
     request_for_get(uri)
   end
 
-  def read_trades(pair: Pair::BTC_JPY )
-    params = {pair: Pair::BTC_JPY }
+  def read_trades(pair: "btc_jpy")
+    params = { pair: pair }
     uri = URI.parse @@base_url + "api/trades"
     uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
-  def read_rate(pair: Pair::BTC_JPY)
+  def read_rate(pair: "btc_jpy")
     uri = URI.parse @@base_url + "api/rate/#{pair}"
     request_for_get(uri)
   end
