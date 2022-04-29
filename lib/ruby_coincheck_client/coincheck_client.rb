@@ -22,7 +22,12 @@ class CoincheckClient
   def read_balance
     uri = URI.parse @@base_url + "api/accounts/balance"
     headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers)
+    result = request_for_get(uri, headers)
+    reject_suffixes = ["_debt", "_lent", "_lend_in_use"]
+    reject_suffixes.each do |suffix|
+      result.reject! { |k, _| k.end_with?(suffix) }
+    end
+    result
   end
 
   def read_accounts
@@ -49,7 +54,8 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: "btc_jpy")
+  # order_type: :buy, :sell, :market_buy, :market_sell
+  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, pair: "btc_jpy")
     body = {
       rate: rate,
       amount: amount,
@@ -63,12 +69,14 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
-  def delete_orders(id: )
+  def delete_orders(id:)
     uri = URI.parse @@base_url + "api/exchange/orders/#{id}"
     headers = get_signature(uri, @key, @secret)
     request_for_delete(uri, headers)
   end
 
+  # order_type: :buy, :sell
+  # price or amount is required
   def read_orders_rate(order_type:, pair: "btc_jpy", price: nil, amount: nil)
     params = { order_type: order_type, pair: pair, price: price, amount: amount }
     uri = URI.parse @@base_url + "api/exchange/orders/rate"
@@ -76,7 +84,7 @@ class CoincheckClient
     request_for_get(uri)
   end
 
-  def create_send_money(address:, amount:)
+  def create_send_btc(address:, amount:)
     body = {
       address: address,
       amount: amount,
@@ -86,7 +94,8 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
-  def read_send_money(currency: "BTC")
+  # currency: only Crypto
+  def read_send_crypto(currency: "BTC")
     params = { currency: currency }
     uri = URI.parse @@base_url + "api/send_money"
     uri.query = URI.encode_www_form(params)
@@ -94,7 +103,8 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_deposit_money(currency: "BTC")
+  # currency: JPY or Crypto
+  def read_deposits(currency: "BTC")
     params = { currency: currency }
     uri = URI.parse @@base_url + "api/deposit_money"
     uri.query = URI.encode_www_form(params)
@@ -102,12 +112,14 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_ticker
+  def read_ticker(pair: "btc_jpy")
+    params = { pair: pair }
     uri = URI.parse @@base_url + "api/ticker"
+    uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
-  def read_trades(pair: "btc_jpy")
+  def read_all_trades(pair: "btc_jpy")
     params = { pair: pair }
     uri = URI.parse @@base_url + "api/trades"
     uri.query = URI.encode_www_form(params)
@@ -119,8 +131,10 @@ class CoincheckClient
     request_for_get(uri)
   end
 
-  def read_order_books
+  def read_order_books(pair: "btc_jpy")
+    params = { pair: pair }
     uri = URI.parse @@base_url + "api/order_books"
+    uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
@@ -149,13 +163,13 @@ class CoincheckClient
     request_for_delete(uri, headers)
   end
 
-  def read_withdraws
+  def read_jpy_withdraws
     uri = URI.parse @@base_url + "api/withdraws"
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
 
-  def delete_withdraws(id:)
+  def delete_jpy_withdraws(id:)
     uri = URI.parse @@base_url + "api/withdraws/#{id}"
     headers = get_signature(uri, @key, @secret)
     request_for_delete(uri, headers)
@@ -176,18 +190,21 @@ class CoincheckClient
 
     def request_for_get(uri, headers = {})
       request = Net::HTTP::Get.new(uri.request_uri, initheader = custom_header(headers))
-      http_request(uri, request)
+      res = http_request(uri, request)
+      JSON.parse(res.body)
     end
 
     def request_for_delete(uri, headers)
       request = Net::HTTP::Delete.new(uri.request_uri, initheader = custom_header(headers))
-      http_request(uri, request)
+      res = http_request(uri, request)
+      JSON.parse(res.body)
     end
 
     def request_for_post(uri, headers, body)
       request = Net::HTTP::Post.new(uri.request_uri, initheader = custom_header(headers))
       request.body = body.to_json
-      http_request(uri, request)
+      res = http_request(uri, request)
+      JSON.parse(res.body)
     end
 
     def custom_header(headers = {})
