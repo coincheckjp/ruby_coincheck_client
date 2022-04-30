@@ -79,12 +79,9 @@ class CoincheckClient
 
   def cancel_all_orders(pair: nil)
     opens = read_orders(pair: pair)["orders"]
-    return if opens.blank?
-    result = []
     opens.each do |order|
-      result.concat(cancel_order(id: order["id"]))
+      cancel_order(id: order["id"])
     end
-    result
   end
 
   # order_type: :buy, :sell
