@@ -36,18 +36,18 @@ response = cc.create_orders(rate: "40001", amount: "0.01", order_type: "buy")
 response = cc.create_orders(rate: "50001", amount: "0.001", order_type: "sell")
 response = cc.create_orders(market_buy_amount: 100, order_type: "market_buy")
 response = cc.create_orders(amount: "0.001", order_type: "market_sell")
-response = cc.delete_orders(id: "2503344")
+response = cc.cancel_order(id: "2503344")
 response = cc.create_send_money(address: "136aHpRdd7eezbEusAKS2GyWx9eXZsEuMz", amount: "0.0005")
-response = cc.read_send_money
-response = cc.read_deposit_money
+response = cc.read_send_crypto
+response = cc.read_deposits
 response = cc.read_ticker
-response = cc.read_trades
+response = cc.read_all_trades
 response = cc.read_rate
 response = cc.read_order_books
 response = cc.read_bank_accounts
 response = cc.delete_bank_accounts(id: "2222")
-response = cc.read_withdraws
-response = cc.delete_withdraws
+response = cc.read_jpy_withdraws
+response = cc.delete_jpy_withdraws
 JSON.parse(response.body)
 ```
 
