@@ -48,10 +48,12 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_orders
+  def read_orders(pair: nil)
     uri = URI.parse @@base_url + "api/exchange/orders/opens"
     headers = get_signature(uri, @key, @secret)
-    request_for_get(uri, headers)
+    result = request_for_get(uri, headers)
+    result["orders"].select! { |o| o["pair"] == pair } if pair
+    result
   end
 
   # order_type: :buy, :sell, :market_buy, :market_sell
@@ -69,10 +71,20 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
-  def delete_orders(id:)
+  def cancel_order(id:)
     uri = URI.parse @@base_url + "api/exchange/orders/#{id}"
     headers = get_signature(uri, @key, @secret)
     request_for_delete(uri, headers)
+  end
+
+  def cancel_all_orders(pair: nil)
+    opens = read_orders(pair: pair)["orders"]
+    return if opens.blank?
+    result = []
+    opens.each do |order|
+      result.concat(cancel_order(id: order["id"]))
+    end
+    result
   end
 
   # order_type: :buy, :sell
