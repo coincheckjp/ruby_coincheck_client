@@ -1,123 +1,123 @@
 # CLAUDE.md
 
-Guide for AI assistants working with the `ruby_coincheck_client` gem.
+`ruby_coincheck_client` gemを扱うAIアシスタント向けガイド。
 
-## Project Overview
+## プロジェクト概要
 
-Ruby client library for the [Coincheck](https://coincheck.com/) cryptocurrency exchange API. Published as a RubyGem (`ruby_coincheck_client`). Current version: **0.3.0**.
+[Coincheck](https://coincheck.com/) 暗号資産取引所APIのRubyクライアントライブラリ。RubyGem (`ruby_coincheck_client`) として公開。現在のバージョン: **0.3.0**。
 
-The gem wraps Coincheck's REST API with Ruby methods for trading, account management, and market data retrieval. It has zero runtime dependencies — only Ruby stdlib (`net/http`, `uri`, `openssl`, `json`).
+CoincheckのREST APIをRubyメソッドでラップし、取引・口座管理・マーケットデータ取得を提供する。ランタイム依存はゼロで、Ruby標準ライブラリ (`net/http`, `uri`, `openssl`, `json`) のみ使用。
 
-## Repository Structure
+## リポジトリ構成
 
 ```
 lib/
-  ruby_coincheck_client.rb              # Module definition, requires
+  ruby_coincheck_client.rb              # モジュール定義、require
   ruby_coincheck_client/
-    coincheck_client.rb                 # Main CoincheckClient class (all API methods)
-    version.rb                          # VERSION constant
+    coincheck_client.rb                 # メインのCoincheckClientクラス（全APIメソッド）
+    version.rb                          # VERSION定数
 spec/
-  spec_helper.rb                        # RSpec + WebMock setup
-  ruby_coincheck_client_spec.rb         # Module-level tests
+  spec_helper.rb                        # RSpec + WebMockセットアップ
+  ruby_coincheck_client_spec.rb         # モジュールレベルのテスト
   ruby_coincheck_client/
-    coincheck_client_spec.rb            # Client integration tests (WebMock stubs)
+    coincheck_client_spec.rb            # クライアント結合テスト（WebMockスタブ使用）
 examples/
-  public.rb                             # Public API usage examples
-  private.rb                            # Authenticated API usage examples
+  public.rb                             # パブリックAPI使用例
+  private.rb                            # 認証付きAPI使用例
 bin/
-  console                               # IRB console with gem loaded
-  setup                                 # Runs bundle install
+  console                               # gemをロードしたIRBコンソール
+  setup                                 # bundle installを実行
 ```
 
-## Build & Test Commands
+## ビルド・テストコマンド
 
 ```bash
-# Install dependencies
+# 依存関係のインストール
 bundle install
 
-# Run tests (default Rake task)
+# テスト実行（デフォルトRakeタスク）
 bundle exec rake
 
-# Run tests directly
+# テストを直接実行
 bundle exec rspec
 
-# Interactive console with gem loaded
+# gemをロードした対話コンソール
 bin/console
 
-# Release (update version.rb first)
+# リリース（先にversion.rbを更新すること）
 bundle exec rake release
 ```
 
-## Test Setup
+## テスト構成
 
-- **Framework**: RSpec (configured in `.rspec` with `--format documentation --color`)
-- **HTTP mocking**: WebMock — all HTTP requests are stubbed in tests
-- **Environment**: Dotenv for loading `.env` files (API keys for examples)
-- **CI**: CircleCI v2 (`.circle.yml`) using `circleci/ruby:2.4.1-node-browsers`
+- **フレームワーク**: RSpec（`.rspec`で `--format documentation --color` を設定）
+- **HTTPモック**: WebMock — テスト内の全HTTPリクエストをスタブ化
+- **環境変数**: Dotenvで`.env`ファイルを読み込み（サンプル用APIキー）
+- **CI**: CircleCI v2（`.circle.yml`）、`circleci/ruby:2.4.1-node-browsers`イメージ使用
 
-Tests live in `spec/`. The existing tests cover public API methods (`read_trades`, `read_order_books`, `read_rate`) and one authenticated method (`read_balance`). Tests verify HTTP status codes and JSON response parsing.
+テストは`spec/`配下に格納。既存テストはパブリックAPIメソッド（`read_trades`、`read_order_books`、`read_rate`）と認証付きメソッド1件（`read_balance`）をカバー。HTTPステータスコードとJSONレスポンスのパースを検証する。
 
-## Architecture
+## アーキテクチャ
 
-### Single class design
+### 単一クラス設計
 
-All functionality lives in `CoincheckClient` (defined at top level, not namespaced under the module). The `RubyCoincheckClient` module only holds the `VERSION` constant.
+全機能は`CoincheckClient`クラスに集約（トップレベルに定義、モジュール配下ではない）。`RubyCoincheckClient`モジュールは`VERSION`定数のみ保持。
 
-### Constructor
+### コンストラクタ
 
 ```ruby
 CoincheckClient.new(key, secret, params = {})
 ```
 
-- `key`/`secret`: API credentials (nil for public endpoints)
-- `params[:base_url]`: Override base URL (default: `https://coincheck.com/`)
-- `params[:ssl]`: Toggle SSL (default: `true`)
+- `key`/`secret`: API認証情報（パブリックエンドポイントではnil）
+- `params[:base_url]`: ベースURLの上書き（デフォルト: `https://coincheck.com/`）
+- `params[:ssl]`: SSLの切り替え（デフォルト: `true`）
 
-### Method naming conventions
+### メソッド命名規則
 
-| Prefix      | HTTP verb | Purpose           |
-|-------------|-----------|-------------------|
-| `read_`     | GET       | Fetch data        |
-| `create_`   | POST      | Create resources  |
-| `delete_`   | DELETE    | Remove resources  |
-| `cancel_`   | DELETE    | Cancel orders     |
+| プレフィックス | HTTPメソッド | 用途             |
+|----------------|-------------|------------------|
+| `read_`        | GET         | データ取得       |
+| `create_`      | POST        | リソース作成     |
+| `delete_`      | DELETE      | リソース削除     |
+| `cancel_`      | DELETE      | 注文キャンセル   |
 
-### Public vs private API methods
+### パブリックAPI vs プライベートAPIメソッド
 
-- **Public methods** (no auth): `read_ticker`, `read_all_trades`, `read_rate`, `read_order_books`, `read_orders_rate`
-- **Private methods** (require key/secret): Everything else — balance, orders, sends, bank accounts, withdrawals
+- **パブリックメソッド**（認証不要）: `read_ticker`, `read_all_trades`, `read_rate`, `read_order_books`, `read_orders_rate`
+- **プライベートメソッド**（key/secret必須）: その他全て — 残高、注文、送金、銀行口座、出金
 
-### Authentication
+### 認証
 
-Private endpoints use HMAC-SHA256 signatures via three headers:
-- `ACCESS-KEY` — API key
-- `ACCESS-NONCE` — Microsecond timestamp
-- `ACCESS-SIGNATURE` — HMAC-SHA256 of `nonce + uri + body`
+プライベートエンドポイントは3つのヘッダーによるHMAC-SHA256署名を使用:
+- `ACCESS-KEY` — APIキー
+- `ACCESS-NONCE` — マイクロ秒タイムスタンプ
+- `ACCESS-SIGNATURE` — `nonce + uri + body` のHMAC-SHA256
 
-The `get_signature` private method handles this.
+`get_signature`プライベートメソッドがこれを処理する。
 
-### HTTP layer
+### HTTP層
 
-Private helper methods (`request_for_get`, `request_for_post`, `request_for_delete`) handle HTTP transport. All responses are parsed from JSON to Ruby hashes. The `custom_header` method adds `Content-Type: application/json` and a `User-Agent` header.
+プライベートヘルパーメソッド（`request_for_get`、`request_for_post`、`request_for_delete`）がHTTP通信を担当。全レスポンスはJSONからRubyハッシュにパースされる。`custom_header`メソッドが`Content-Type: application/json`と`User-Agent`ヘッダーを付与。
 
-## Code Conventions
+## コード規約
 
-- **Indentation**: 2 spaces
-- **Naming**: `snake_case` for methods and variables
-- **Strings**: Single quotes preferred; double quotes for interpolation
-- **Hash keys**: Symbols in method bodies, string keys in parsed JSON responses
-- **Default pair**: Most methods default to `pair: "btc_jpy"`
-- **Return values**: All API methods return parsed JSON (Ruby Hash/Array)
-- **Class variables**: `@@base_url` and `@@ssl` (shared across instances)
-- **No linter configured** — no RuboCop or similar tooling
+- **インデント**: スペース2つ
+- **命名**: メソッド・変数は`snake_case`
+- **文字列**: シングルクォート優先、式展開時はダブルクォート
+- **ハッシュキー**: メソッド内はシンボル、JSONパース結果は文字列キー
+- **デフォルトペア**: 多くのメソッドで `pair: "btc_jpy"` がデフォルト
+- **戻り値**: 全APIメソッドはパース済みJSON（Ruby Hash/Array）を返す
+- **クラス変数**: `@@base_url`と`@@ssl`（インスタンス間で共有）
+- **リンター未設定** — RuboCop等のツールなし
 
-## Dependencies
+## 依存関係
 
-### Runtime
+### ランタイム
 
-None — only Ruby stdlib.
+なし — Ruby標準ライブラリのみ。
 
-### Development
+### 開発用
 
 - `bundler` (~> 1.9)
 - `rake` (~> 10.0)
@@ -125,10 +125,10 @@ None — only Ruby stdlib.
 - `dotenv`
 - `webmock`
 
-## Important Notes
+## 注意事項
 
-- `.env` is gitignored — API keys must never be committed
-- `lib/ruby_coincheck_client.rb` is in `.gitignore` (generated/overridden locally)
-- SSL verification is disabled (`VERIFY_NONE`) in the HTTP layer
-- The `create_orders` method references an undefined `position_id` variable (line 66 of `coincheck_client.rb`) — this is a known bug
-- Tests call methods that don't exist on the current client (e.g., `read_trades` vs `read_all_trades`) and assert on raw response objects rather than parsed hashes — the test suite may need updates
+- `.env`はgitignore対象 — APIキーは絶対にコミットしないこと
+- `lib/ruby_coincheck_client.rb`が`.gitignore`に含まれている（ローカルで生成/上書きされる）
+- HTTP層でSSL検証が無効化されている（`VERIFY_NONE`）
+- `create_orders`メソッドが未定義の`position_id`変数を参照している（`coincheck_client.rb` 66行目）— 既知のバグ
+- テストが現在のクライアントに存在しないメソッドを呼び出している（例: `read_trades` vs `read_all_trades`）、またrawレスポンスオブジェクトに対してアサートしている — テストスイートの更新が必要な可能性あり
