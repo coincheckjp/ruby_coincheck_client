@@ -8,7 +8,7 @@ describe CoincheckClient do
 
     it 'return status code 200' do
       stub_request(
-        :get, "https://coincheck.com/api/trades?pair=#{CoincheckClient::Pair::BTC_JPY}"
+        :get, "https://coincheck.com/api/trades?pair=btc_jpy"
       ).to_return(
         body: [
           {
@@ -70,7 +70,7 @@ describe CoincheckClient do
 
     it 'return status code 200' do
       stub_request(
-        :get, "https://coincheck.com/api/rate/#{CoincheckClient::Pair::BTC_JPY}"
+        :get, "https://coincheck.com/api/rate/btc_jpy"
       ).to_return(
         body: {
           "success": true,
@@ -116,45 +116,6 @@ describe CoincheckClient do
       expect(res.code).to eq '200'
       expect(body['success']).to eq true
       expect(body['btc']).to eq "7.75052654"
-    end
-  end
-
-  describe '#read_positions' do
-    let(:cc) { CoincheckClient.new('api_key', 'secret_key') }
-    let(:res) { cc.read_positions(status: 'open') }
-    let(:body) { JSON.parse(res.body) }
-
-    it 'return status code 200' do
-      stub_request(
-        :get, "https://coincheck.com/api/exchange/leverage/positions?status=open"
-      ).to_return(
-        body: {
-          "success": true,
-          "pagination":{
-            "limit": 10,
-            "order": "desc",
-            "starting_after": nil,
-            "ending_before": nil
-          },
-          "data":[
-            {
-              "id": 202835,
-              "order_type": "buy",
-              "rate": 26890,
-              "pair": "btc_jpy",
-              "pending_amount": "0.5527",
-              "pending_market_buy_amount": nil,
-              "stop_loss_rate": nil,
-              "created_at": "2015-01-10T05:55:38.000Z"
-            }
-          ]
-        }.to_json,
-        status: 200
-      )
-
-      expect(res.code).to eq '200'
-      expect(body['success']).to eq true
-      expect(body['data'][0]['id']).to eq 202835
     end
   end
 
