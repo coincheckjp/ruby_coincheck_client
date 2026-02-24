@@ -2,8 +2,10 @@ require 'net/http'
 require 'uri'
 require 'openssl'
 require 'json'
+require_relative './currency'
 
 class CoincheckClient
+  include Currency
 
   @@base_url = "https://coincheck.com/"
   @@ssl = true
@@ -22,12 +24,13 @@ class CoincheckClient
   def read_balance
     uri = URI.parse @@base_url + "api/accounts/balance"
     headers = get_signature(uri, @key, @secret)
-    result = request_for_get(uri, headers)
-    reject_suffixes = ["_debt", "_lent", "_lend_in_use"]
-    reject_suffixes.each do |suffix|
-      result.reject! { |k, _| k.end_with?(suffix) }
-    end
-    result
+    request_for_get(uri, headers)
+  end
+
+  def read_leverage_balance
+    uri = URI.parse @@base_url + "api/accounts/leverage_balance"
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers)
   end
 
   def read_accounts
@@ -48,16 +51,21 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_orders(pair: nil)
-    uri = URI.parse @@base_url + "api/exchange/orders/opens"
+  def read_positions(status: nil)
+    params = { status: status }
+    uri = URI.parse @@base_url + "api/exchange/leverage/positions"
+    uri.query = URI.encode_www_form(params)
     headers = get_signature(uri, @key, @secret)
-    result = request_for_get(uri, headers)
-    result["orders"].select! { |o| o["pair"] == pair } if pair
-    result
+    request_for_get(uri, headers)
   end
 
-  # order_type: :buy, :sell, :market_buy, :market_sell
-  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, pair: "btc_jpy")
+  def read_orders
+    uri = URI.parse @@base_url + "api/exchange/orders/opens"
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers)
+  end
+
+  def create_orders(order_type:, rate: nil, amount: nil, market_buy_amount: nil, position_id: nil, pair: Pair::BTC_JPY)
     body = {
       rate: rate,
       amount: amount,
@@ -71,29 +79,20 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
-  def cancel_order(id:)
+  def delete_orders(id: )
     uri = URI.parse @@base_url + "api/exchange/orders/#{id}"
     headers = get_signature(uri, @key, @secret)
     request_for_delete(uri, headers)
   end
 
-  def cancel_all_orders(pair: nil)
-    opens = read_orders(pair: pair)["orders"]
-    opens.each do |order|
-      cancel_order(id: order["id"])
-    end
-  end
-
-  # order_type: :buy, :sell
-  # price or amount is required
-  def read_orders_rate(order_type:, pair: "btc_jpy", price: nil, amount: nil)
+  def read_orders_rate(order_type:, pair: Pair::BTC_JPY, price: nil, amount: nil)
     params = { order_type: order_type, pair: pair, price: price, amount: amount }
     uri = URI.parse @@base_url + "api/exchange/orders/rate"
     uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
-  def create_send_btc(address:, amount:)
+  def create_send_money(address:, amount:)
     body = {
       address: address,
       amount: amount,
@@ -103,8 +102,7 @@ class CoincheckClient
     request_for_post(uri, headers, body)
   end
 
-  # currency: only Crypto
-  def read_send_crypto(currency: "BTC")
+  def read_send_money(currency: "BTC")
     params = { currency: currency }
     uri = URI.parse @@base_url + "api/send_money"
     uri.query = URI.encode_www_form(params)
@@ -112,8 +110,7 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  # currency: JPY or Crypto
-  def read_deposits(currency: "BTC")
+  def read_deposit_money(currency: "BTC")
     params = { currency: currency }
     uri = URI.parse @@base_url + "api/deposit_money"
     uri.query = URI.encode_www_form(params)
@@ -121,29 +118,31 @@ class CoincheckClient
     request_for_get(uri, headers)
   end
 
-  def read_ticker(pair: "btc_jpy")
-    params = { pair: pair }
+  def create_deposit_money_fast(id: )
+    uri = URI.parse @@base_url + "api/deposit_money/#{id}/fast"
+    headers = get_signature(uri, @key, @secret)
+    request_for_delete(uri, headers)
+  end
+
+  def read_ticker
     uri = URI.parse @@base_url + "api/ticker"
-    uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
-  def read_all_trades(pair: "btc_jpy")
-    params = { pair: pair }
+  def read_trades(pair: Pair::BTC_JPY )
+    params = {pair: Pair::BTC_JPY }
     uri = URI.parse @@base_url + "api/trades"
     uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
-  def read_rate(pair: "btc_jpy")
+  def read_rate(pair: Pair::BTC_JPY)
     uri = URI.parse @@base_url + "api/rate/#{pair}"
     request_for_get(uri)
   end
 
-  def read_order_books(pair: "btc_jpy")
-    params = { pair: pair }
+  def read_order_books
     uri = URI.parse @@base_url + "api/order_books"
-    uri.query = URI.encode_www_form(params)
     request_for_get(uri)
   end
 
@@ -172,16 +171,59 @@ class CoincheckClient
     request_for_delete(uri, headers)
   end
 
-  def read_jpy_withdraws
+  def read_withdraws
     uri = URI.parse @@base_url + "api/withdraws"
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
 
-  def delete_jpy_withdraws(id:)
+  def delete_withdraws(id:)
     uri = URI.parse @@base_url + "api/withdraws/#{id}"
     headers = get_signature(uri, @key, @secret)
     request_for_delete(uri, headers)
+  end
+
+  def create_borrows(amount:, currency:)
+    body = {
+      amount: amount,
+      currency: currency
+    }
+    uri = URI.parse @@base_url + "api/lending/borrows"
+    headers = get_signature(uri, @key, @secret, body.to_json)
+    request_for_post(uri, headers, body)
+  end
+
+  def read_borrows
+    uri = URI.parse @@base_url + "api/lending/borrows/matches"
+    headers = get_signature(uri, @key, @secret)
+    request_for_get(uri, headers)
+  end
+
+  def delete_borrows(id:)
+    body = { id: id}
+    uri = URI.parse @@base_url + "api/lending/borrows/#{id}/repay"
+    headers = get_signature(uri, @key, @secret, body.to_json)
+    request_for_post(uri, headers, body)
+  end
+
+  def transfer_to_leverage(amount:, currency: JPY)
+    body = {
+      amount: amount,
+      currency: currency
+    }
+    uri = URI.parse @@base_url + "api/exchange/transfers/to_leverage"
+    headers = get_signature(uri, @key, @secret, body.to_json)
+    request_for_post(uri, headers, body)
+  end
+
+  def transfer_from_leverage(amount:, currency: JPY)
+    body = {
+      amount: amount,
+      currency: currency
+    }
+    uri = URI.parse @@base_url + "api/exchange/transfers/from_leverage"
+    headers = get_signature(uri, @key, @secret, body.to_json)
+    request_for_post(uri, headers, body)
   end
 
   private
@@ -199,21 +241,18 @@ class CoincheckClient
 
     def request_for_get(uri, headers = {})
       request = Net::HTTP::Get.new(uri.request_uri, initheader = custom_header(headers))
-      res = http_request(uri, request)
-      JSON.parse(res.body)
+      http_request(uri, request)
     end
 
     def request_for_delete(uri, headers)
       request = Net::HTTP::Delete.new(uri.request_uri, initheader = custom_header(headers))
-      res = http_request(uri, request)
-      JSON.parse(res.body)
+      http_request(uri, request)
     end
 
     def request_for_post(uri, headers, body)
       request = Net::HTTP::Post.new(uri.request_uri, initheader = custom_header(headers))
       request.body = body.to_json
-      res = http_request(uri, request)
-      JSON.parse(res.body)
+      http_request(uri, request)
     end
 
     def custom_header(headers = {})
