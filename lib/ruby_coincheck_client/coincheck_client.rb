@@ -13,10 +13,10 @@ class CoincheckClient
   def initialize(key = nil, secret = nil, params = {})
     @key = key
     @secret = secret
-    if !params[:base_url].nil?
+    if params[:base_url]
       @@base_url = params[:base_url]
     end
-    if !params[:ssl].nil?
+    if params[:ssl]
       @@ssl = params[:ssl]
     end
   end
