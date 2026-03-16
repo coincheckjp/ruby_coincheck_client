@@ -44,6 +44,15 @@ class CoincheckClient
     headers = get_signature(uri, @key, @secret)
     request_for_get(uri, headers)
   end
+  
+  def read_transactions_pagination(body = {})
+    unless body[:pair]
+      body[:pair] = 'btc_jpy'
+    end
+    uri = URI.parse @@base_url + "api/exchange/orders/transactions_pagination"
+    headers = get_signature(uri, @key, @secret, body.to_json)
+    request_for_get(uri, headers, body)
+  end
 
   def read_page_transactions
     uri = URI.parse @@base_url + "api/exchange/orders/transactions_pagination"
