@@ -231,7 +231,7 @@ class CoincheckClient
       https = Net::HTTP.new(uri.host, uri.port)
       if @@ssl
         https.use_ssl = true
-        https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+        https.verify_mode = OpenSSL::SSL::VERIFY_PEER
       end
 
       response = https.start do |h|
