@@ -4,6 +4,9 @@ source 'https://rubygems.org'
 gemspec
 
 group :development, :test do
+  gem 'base64'
+  gem 'bigdecimal'
   gem 'dotenv'
+  gem 'rexml'
   gem 'webmock'
 end
