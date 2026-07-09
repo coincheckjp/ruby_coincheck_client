@@ -14,6 +14,7 @@ module Currency
   LTC = "LTC"
   DASH = "DASH"
   BCH = "BCH"
+  MONA = "MONA"
 
   module Pair
     BTC_JPY = "btc_jpy"
@@ -30,6 +31,7 @@ module Currency
     LTC_JPY = "ltc_jpy"
     DASH_JPY = "dash_jpy"
     BCH_JPY = "bch_jpy"
+    MONA_JPY = "mona_jpy"
     ETH_BTC = "eth_btc"
     ETC_BTC = "etc_btc"
     LSK_BTC = "lsk_btc"
@@ -42,5 +44,6 @@ module Currency
     LTC_BTC = "ltc_btc"
     DASH_BTC = "dash_btc"
     BCH_BTC = "bch_btc"
+    MONA_BTC = "mona_btc"
   end
 end
